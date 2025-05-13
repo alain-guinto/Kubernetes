@@ -7,7 +7,7 @@ By repeatedly working through realistic scenarios, you’ll build confidence, im
 Whether you're just starting or fine-tuning your skills, these simulations are built to give you the edge you need to pass the CKAD with confidence.
 
 ## Contents
-- [Shortcut Keys and Time-saving Tips]()
+- [Shortcut Keys and Time-saving Tips](shortcutkeys.md)
 - [CKAD Simulation Exam V1](ckad-simulation-exercise-v1.md)
 - [CKAD Simulation Exam V2](ckad-simulation-exercise-v2.md)
 - [Pods](pod-exercise.md)
