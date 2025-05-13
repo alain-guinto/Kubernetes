@@ -348,6 +348,7 @@ ps aux
 <details>
 <summary>🔒 show answer </summary>
 <p>  
+  
 > Check if busy pod exists in sit-env namepsace
 
 ```bash
@@ -425,18 +426,89 @@ PID   USER     TIME  COMMAND
 
 ### 📌  Task 7:
 A Pod named database is running in the dev namespace and requires access to sensitive credentials. Your task is to securely provide this data using a Kubernetes Secret.
-> Create a Secret named super-secret with the following key-value pair:
+> Create a Secret named db-secret with the following key-value pair:
 ```bash
-password: SolArch@2024
+password: my-db-pass
 ```
-> Then, update the database Pod to mount this Secret at the path /db/credential.
+> Then, update the database Pod to mount this Secret at the path /db/credential.  
 > After applying the changes, verify the setup by connecting to the Pod and checking the contents of the mounted path. The password must be visible from within the container.
 <details>
 <summary>🔒 show answer </summary>
 <p>
 
+> Check if database pod exists in dev namepsace
+
 ```bash
-TBD
+kgp database -n dev
+
+# output
+NAME       READY   STATUS    RESTARTS   AGE
+database   1/1     Running   0          113m
+```
+> Create a secret
+
+```bash
+k -n dev create secret generic db-secret --from-literal=password=my-db-pass
+```
+> Copy the configuration yaml of database pod 
+
+```bash
+kgp database -n dev -oyaml > database.yaml
+
+vi database.yaml
+```
+
+> Update the database.yaml and it should look like below.
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: database
+  name: database
+  namespace: dev
+spec:
+  containers:
+  - image: redis
+    imagePullPolicy: Always
+    name: database
+    resources: {}
+    volumeMounts:
+    - mountPath: /db/credential     # Add
+      name: my-db-secret            # Add
+  dnsPolicy: ClusterFirst
+  volumes:                          # Add
+  - name: my-db-secret              # Add
+    secret:                         # Add
+      secretName: db-secret         # Add
+status: {}
+```
+> Delete database pod
+
+```bash
+kdel pod database -n dev
+
+```
+
+> Apply changes
+
+```bash
+kaf database.yaml
+
+```
+> Verify
+
+```bash
+kex database -n dev -- ls /db/credential
+
+#Output
+password
+
+kex database -n dev -- cat /db/credential/password
+
+#Output
+my-db-pass
 ```
 
 </p>
@@ -450,17 +522,87 @@ agent-id: A007
 mission: Operation Midnight  
 clearance-level: TopSecret  
 ```
-Once the file is created, generate a ConfigMap named agent-config in the default from the text file.
+Once the file is created, generate a ConfigMap named agent-data in the default from the text file.
 > Modify the existing pod named spy-pod in the default namespace to mount the ConfigMap you just created at the path /etc/agent-secrets.
 > -To check your work, SSH into the pod and navigate to the /etc/agent-secrets directory if you can see the data.
 <details>
 <summary>🔒 show answer </summary>
-<p>
+<p>  
+
+> Create agent-data.txt file
+```bash
+echo -e "agent-id: A007\nmission: Operation-Midnight\nclearance-level: Top-secret" > agent-data.txt
+```
+> Create configmap from agent-data.txt file
+```bash
+k create configmap agent-data --from-file=agent-data.txt
+```
+> Create configmap from agent-data.txt file
+```bash
+k create configmap agent-data --from-file=agent-data.txt
+```
+> Check spy-pod in default namespace if exists and copy its configuration yaml 
+```bash
+kgp spy-pod
+
+kgp spy-pod -oyaml > spy-pod.yaml
+
+vi spy-pod # modify this yaml to add configmap
+```
+> Update spy-pod yaml and it should look like below
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: spy-pod
+  name: spy-pod
+  namespace: default
+spec:
+  containers:
+  - image: redis
+    imagePullPolicy: Always
+    name: spy-pod-container
+    resources: {}
+    volumeMounts:
+    - mountPath: /etc/agent-secrets
+      name: agent-config
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+  volumes:
+  - name: agent-config
+    configMap:
+      name: agent-data
+status: {}
+```
+> Delete spy-pod pod
 
 ```bash
-TBD
+kdel po spy-pod
 ```
 
+> Apply changes
+
+```bash
+kaf spy-pod.yaml
+
+```
+> Verify
+
+```bash
+kex spy-pod -- ls /etc/agent-secrets
+
+#Output
+agent-data.txt
+
+kex spy-pod -- cat /etc/agent-secrets/agent-data.txt
+
+#Output
+agent-id: A007
+mission: Operation-Midnight
+clearance-level: Top-secret
+```
 </p>
 </details>
 
@@ -470,13 +612,70 @@ A Pod named webserver in the rollout namespace is not in a running state. Your t
 > You may use standard Kubernetes troubleshooting commands such as kubectl describe and kubectl logs to assist with your investigation.
 <details>
 <summary>🔒 show answer </summary>
-<p>
+<p>  
 
+> Check webserver pod in rollout namespace
 ```bash
-kubectl -n rollout get po webserver  #--- check the pod in rollout namespace
-kubectl -n rollout edit po webserver #--- directly edit the pod and change the mispelled image
-```
+kgp webserver -n rollout  #--- check the pod in rollout namespace
 
+#output
+NAME        READY   STATUS             RESTARTS   AGE
+webserver   0/1     ImagePullBackOff   0          152m
+
+k -n rollout edit po webserver #--- directly edit the pod and change the mispelled image
+```
+> Update webserver pod should look like this
+```yml
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: 8c30edac0ed5b217594d8d12eca446ef561c07e867e7461c58a1558598b9ec92
+    cni.projectcalico.org/podIP: 192.168.1.4/32
+    cni.projectcalico.org/podIPs: 192.168.1.4/32
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"creationTimestamp":null,"labels":{"run":"webserver"},"name":"webserver","namespace":"rollout"},"spec":{"containers":[{"image":"ngiinx","name":"webserver","resources":{}}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always"},"status":{}}
+  creationTimestamp: "2025-05-13T13:38:23Z"
+  labels:
+    run: webserver
+  name: webserver
+  namespace: rollout
+  resourceVersion: "16513"
+  uid: aaceb5e1-dc84-43e7-a02d-950d25e4a0e7
+spec:
+  containers:
+  - image: nginx         # Modified fron ngiinx to nginx
+    imagePullPolicy: Always
+    name: webserver
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-lwtpp
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: node01
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+status: {}
+```
+> Verify
+```bash
+kgp webserver -n rollout  #--- check the pod in rollout namespace
+
+NAME        READY   STATUS    RESTARTS   AGE
+webserver   1/1     Running   0          157m
+```
 </p>
 </details>
 
