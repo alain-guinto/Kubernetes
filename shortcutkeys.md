@@ -1,6 +1,6 @@
 # Kubernets Command Aliases 
-Customize your terminal during the exam
-Run this command below to edit your shell config:
+Customize your terminal during the exam,
+run below command to edit your shell config:
 ```bash
 vi ~/.bashrc # or
 vi ~/.bash_profile # or
