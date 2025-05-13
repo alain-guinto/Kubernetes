@@ -11,8 +11,9 @@ A new Pod needs to be created in the sa namespace to run a multi-container workl
 > Ensure both containers run successfully in the same Pod.
 <details>
 <summary>🔒 show answer </summary>
-<p>
+<p>  
 
+> Create a template pod yaml   
 ```bash
 k -n sa run multi-container-pod --image=nginx --dry-run=client -oyaml > multi-container-pod.yaml #--- create a pod template
 ```
@@ -41,9 +42,15 @@ spec:
   restartPolicy: Always
 status: {}
 ```
-> Apply the changes using the shortcut key commands define in aliases
+> Apply the changes using the shortcut key commands define in aliases and verify
 ```bash
-kaf multi-container-pod.yaml
+kaf multi-container-pod.yaml  # Apply
+
+kgp multi-container-pod -n sa  # Verify
+
+#output
+NAME                  READY   STATUS    RESTARTS   AGE
+multi-container-pod   2/2     Running   0          154m
 ```
 
 </p>
@@ -68,12 +75,16 @@ nodePort: 30008
   
 ```bash
 kgd -n data
+
+# output
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+webdeploy   3/3     3            3           167m
 ```
-> Create service yaml template
+> Create service yaml template from webdeploy deployment
 ```bash
 k expose deploy webdeploy -n data --name=webapp-service --type=NodePort --port=8080 --target-port=80 --dry-run=client -oyaml > webapp-service.yaml
 ```
-> Edit the created yaml template to add nodePort
+> Edit the created service yaml template to add nodePort
 ```yml
 apiVersion: v1
 kind: Service
@@ -95,7 +106,9 @@ spec:
 status:
   loadBalancer: {}
 ```
+
 > Apply the changes using the shortcut key commands define in aliases
+
 ```bash
 kaf webapp-service.yaml 
 ```
@@ -206,7 +219,8 @@ replicas: 3
 > Once the Replica Set is created, delete the app pod and check if the pod will be automatically replaced.
 <details>
 <summary>🔒 show answer </summary>
-<p>
+<p>  
+  
 > Check if app pod exist in sa namespace  
   
 ```bash
