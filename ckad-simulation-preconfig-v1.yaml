@@ -1,0 +1,232 @@
+# namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: rollout
+spec: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: data
+spec: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+    creationTimestamp: null
+    name: dev
+spec: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: sa
+spec: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: apper
+spec: {}
+status: {}
+
+---
+#challenge1
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: webserver
+  name: webserver
+  namespace: rollout
+spec:
+  containers:
+  - image: ngiinx
+    name: webserver
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+---
+#challenge2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: webdeploy
+  name: webdeploy
+  namespace: data
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webdeploy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: webdeploy
+    spec:
+      containers:
+      - image: httpd
+        name: httpd
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+
+---
+
+#challenge3
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: backend-pod
+  name: backend-pod
+spec:
+  containers:
+  - image: redis
+    name: backend-pod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: app
+  name: app
+  namespace: sa
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+---
+#challenge6
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busy
+  namespace: apper
+spec:
+  containers:
+  - name: busy
+    image: busybox
+    command: [ "sh", "-c", "sleep 1h" ]
+
+---
+
+#challenge7
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: database
+  name: database
+  namespace: dev
+spec:
+  containers:
+  - image: redis
+    name: database
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+---
+#challenge8
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: config-pod
+  name: config-pod
+spec:
+  containers:
+  - image: redis
+    name: config-pod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+---
+
+#challenge10
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: sa-pod
+  name: sa-pod
+spec:
+  containers:
+  - image: nginx
+    name: sa-pod
+
+
+---
+
+#challenge11
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: server
+  name: rollout-app
+  namespace: rollout
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: server
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: server
+    spec:
+      containers:
+      - image: httpd
+        name: httpd
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
