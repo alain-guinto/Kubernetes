@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   creationTimestamp: null
-  name: apper
+  name: sit-env
 spec: {}
 status: {}
 
@@ -140,7 +140,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: busy
-  namespace: apper
+  namespace: sit-env
 spec:
   containers:
   - name: busy
@@ -174,12 +174,12 @@ kind: Pod
 metadata:
   creationTimestamp: null
   labels:
-    run: config-pod
-  name: config-pod
+    run: spy-pod
+  name: spy-pod
 spec:
   containers:
   - image: redis
-    name: config-pod
+    name: spy-pod-container
     resources: {}
   dnsPolicy: ClusterFirst
   restartPolicy: Always
