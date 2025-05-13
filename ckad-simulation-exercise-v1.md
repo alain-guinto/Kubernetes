@@ -3,7 +3,7 @@
 Pre-configuration: Run below code to set-up your environment
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/alain-guinto/Kubernetes/6a618512f3318a128303b8d370b5ce302b64d3e1/ckad-simulation-preconfig-v1.yaml
+kubectl apply -f https://raw.githubusercontent.com/alain-guinto/Kubernetes/refs/heads/main/ckad-simulation-preconfig-v1.yaml
 ```
 
 ### 📌  Task 1: 
