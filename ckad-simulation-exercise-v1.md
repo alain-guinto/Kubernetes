@@ -647,40 +647,21 @@ k -n rollout edit po webserver #--- directly edit the pod and change the mispell
 apiVersion: v1
 kind: Pod
 metadata:
-  annotations:
-    cni.projectcalico.org/containerID: 8c30edac0ed5b217594d8d12eca446ef561c07e867e7461c58a1558598b9ec92
-    cni.projectcalico.org/podIP: 192.168.1.4/32
-    cni.projectcalico.org/podIPs: 192.168.1.4/32
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"creationTimestamp":null,"labels":{"run":"webserver"},"name":"webserver","namespace":"rollout"},"spec":{"containers":[{"image":"ngiinx","name":"webserver","resources":{}}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always"},"status":{}}
-  creationTimestamp: "2025-05-13T13:38:23Z"
   labels:
     run: webserver
   name: webserver
   namespace: rollout
-  resourceVersion: "16513"
-  uid: aaceb5e1-dc84-43e7-a02d-950d25e4a0e7
 spec:
   containers:
-  - image: nginx         # Modified fron ngiinx to nginx
+  - image: nginx               # Modified fron ngiinx to nginx
     imagePullPolicy: Always
     name: webserver
     resources: {}
-    terminationMessagePath: /dev/termination-log
-    terminationMessagePolicy: File
     volumeMounts:
     - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
       name: kube-api-access-lwtpp
       readOnly: true
   dnsPolicy: ClusterFirst
-  enableServiceLinks: true
-  nodeName: node01
-  preemptionPolicy: PreemptLowerPriority
-  priority: 0
-  restartPolicy: Always
-  schedulerName: default-scheduler
-  securityContext: {}
-  serviceAccount: default
 status: {}
 ```
 > Verify
@@ -705,7 +686,11 @@ A Pod named sa-pod is running in the default namespace and requires access to a 
 ```bash
 k create sa admin
 
-ksa admin     # check newly created service account
+kgsa admin     # check newly created service account
+
+# output
+NAME    SECRETS   AGE
+admin   0         11m
 ```
 > Verify if sa-pod exists and running in default namespace
 ```bash
@@ -720,7 +705,35 @@ kgp sa-pod -oyaml > sa-pod.yaml
 ```
 > Updated yaml should look like this
 ```yml
-
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: sa-pod
+  name: sa-pod
+  namespace: default
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: Always
+    name: sa-pod
+    resources: {}
+    volumeMounts:
+    - mountPath: /etc/secret
+      name: my-admin-secret
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  serviceAccountName: admin
+  volumes:
+  - name: my-admin-secret
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          path: token
+          expirationSeconds: 3600
+          audience: api
+status: {}
 ```
 > Delete sa-pod
 ```bash
@@ -733,10 +746,12 @@ kaf sa-pod.yaml
 ```
 > Verify secret is available in the path
 ```bash
-kex backend-pod -- printenv | grep -E 'name|role'   # output should similar to below
+kex sa-pod -- ls /etc/secret   # output should similar to below
 
-name=Alain
-role=Solutions-Architect
+kex sa-pod -- cat /etc/secret/token
+
+# output
+eyJhbGciOiJSUzI1NiIsImtpZCI6IkZMSGZEb3cxakNMX2NaY2dlYmU2M0xaRGRXNWtSMmVJRE54QjNzOGwxdzgifQ.eyJhdWQiOlsiYXBpIl0sImV4cCI6MTc0NzIxNDk2NSwiaWF0IjoxNzQ3MjExMzY1LCJpc3MiOiJodHRwczovL2t1YmVybmV0ZXMuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbCIsImp0aSI6ImIyNTg5M2ViLTJlZjMtNDkxMy04MTYwLWUwN2U1MDJlMTgwYiIsImt1YmVybmV0ZXMuaW8iOnsibmFtZXNwYWNlIjoiZGVmYXVsdCIsIm5vZGUiOnsibmFtZSI6Im5vZGUwMSIsInVpZCI6ImI2ZDMyMTU2LTAyNWQtNDJmZS1hZWIxLTA0ZmEzNDBhMzE3MSJ9LCJwb2QiOnsibmFtZSI6InNhLXBvZCIsInVpZCI6ImFkMzg5NGY0LTA3NjAtNDAwOS05MjZjLTQwOTEwMjdiYTA2MyJ9LCJzZXJ2aWNlYWNjb3VudCI6eyJuYW1lIjoiYWRtaW4iLCJ1aWQiOiIyMTM3OTA0My00NTA4LTRhODctYTc4Yi1lYWZhNmEzODA0OWEifX0sIm5iZiI6MTc0NzIxMTM2NSwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6YWRtaW4ifQ.j5vsp83X42lhm5JOT8jfGCmr-KZFxvfCxU6RMKlJdspK7qtceqsMJ1oYht1C9iPe99ETMzBwAhcTGWSVIgamSUFHmVZNCmVit9vzN-PSvYX4Z2iOYRJY9xYe8du9W6tf6pZT15MQhxX62_FwOhOlv2eP94l29AGJeHsBCIJh--MdRNnabjcoJ0VvbJxNW5CyWYzq0x53hqWHweKNwYw_YdCDPY4r3s6SJeBbEwXxlfvKUvC_AOTCmkHRpCOR364sXpbMv3OkmcCgB46tZ1MQjwsdgD4_qDtReikWJPcbXz31vyg_wUFIVws2lt0NdUPNhryDh9uqOb89U8IvbuY
 ```
 
 </p>
@@ -748,79 +763,81 @@ There is an existing deployment in the rollout namespace. Your task is to create
 > Verify the deployment configuration to confirm the traffic distribution and that the application is running successfully.
 <details>
 <summary>🔒 show answer </summary>
-<p>
+<p>  
 
+> Check if deployment rollout-app exists in rollout namespace
 ```bash
-TBD
-```
-> Verify if backend-pod exists in default namespace
-```bash
-kgp backend-pod  # expected outout  
+kgd rollout-app -n rollout
 
-NAME          READY   STATUS    RESTARTS   AGE
-backend-pod   1/1     Running   0          25m
-```
-> Create a configmap
-```bash
-k create configmap my-config-var --from-literal=name=Alain --from-literal=role=Solutions-Architect
+# output
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+rollout-app   3/3     3            3           28m
 
-k get configmap my-config-var  # check if configmap created
 ```
-> Copy the configuration of backend-pod
+> Copy the deployment rollout-app and edit it to create a rollout-app-v2
 ```bash
-kgp backend-pod -oyaml > backend-pod.yaml  
+kgd rollout-app -n rollout > rollout-app-v2.yaml  # expected outout  
+
+vi rollout-app-v2.yaml  # Edit yaml file 
 ```
 > Updated yaml should look like this
 ```yml
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
+  creationTimestamp: null
   labels:
-    run: backend-pod
-  name: backend-pod
-  namespace: default
+    app: server
+  name: rollout-app-v2        # Modified
+  namespace: rollout
 spec:
-  containers:
-  - image: redis
-    imagePullPolicy: Always
-    name: backend-pod
-    resources: {}
-    envFrom:                                 # Add
-    - configMapRef:                          # Add
-        name: my-config-var                  # Add
-    terminationMessagePath: /dev/termination-log
-    terminationMessagePolicy: File
-  dnsPolicy: ClusterFirst
-  enableServiceLinks: true
-  nodeName: node01
-  preemptionPolicy: PreemptLowerPriority
-  priority: 0
-  restartPolicy: Always
-  schedulerName: default-scheduler
-  securityContext: {}
-  serviceAccount: default
-  serviceAccountName: default
-  terminationGracePeriodSeconds: 30
-  tolerations:
-  - effect: NoExecute
-    key: node.kubernetes.io/not-ready
-    operator: Exists
-    tolerationSeconds: 300
-  - effect: NoExecute
-    key: node.kubernetes.io/unreachable
-    operator: Exists
-    tolerationSeconds: 300 
+  replicas: 2                 # Modified
+  selector:
+    matchLabels:
+      app: server
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: server
+    spec:
+      containers:
+      - image: nginx          # Modified
+        name: nginx-container # Modified
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
 ```
 > Apply changes
 ```bash
-kaf backend-pod.yaml  
-```
-> Verify environment variables
+kaf rollout-app-v2.yaml  
+```  
+> Create a service and make sure the selector is matched to deployment labels
 ```bash
-kex backend-pod -- printenv | grep -E 'name|role'   # output should similar to below
+k expose deploy rollout-app -n rollout --name=rollout-svc --port=80 --target-port=80 --selector=app=server
+```
+> Check service if it has endpoints 
+```bash
+k get endpoints rollout-svc -n rollout
 
-name=Alain
-role=Solutions-Architect
+# output
+NAME          ENDPOINTS                                                     AGE
+rollout-svc   192.168.1.27:80,192.168.1.28:80,192.168.1.29:80 + 2 more...   30m
+```
+
+> Check the pods in rollout namespaces
+```bash
+kgp -n rollout
+
+# output
+NAME                              READY   STATUS             RESTARTS   AGE
+rollout-app-84fcf654c7-7hr92      1/1     Running            0          38m
+rollout-app-84fcf654c7-gpn6q      1/1     Running            0          38m
+rollout-app-84fcf654c7-zvgst      1/1     Running            0          38m
+rollout-app-v2-58657f8767-ltmp5   1/1     Running            0          36m
+rollout-app-v2-58657f8767-ltqbh   1/1     Running            0          36m
 ```
 
 </p>
@@ -832,79 +849,64 @@ Your team needs to restrict egress traffic from applications in the rollout name
 > Incoming traffic to the Pods in rollout should not be affected.  
 <details>
 <summary>🔒 show answer </summary>
-<p>
-
-```bash
-TBD
-```
-> Verify if backend-pod exists in default namespace
-```bash
-kgp backend-pod  # expected outout  
-
-NAME          READY   STATUS    RESTARTS   AGE
-backend-pod   1/1     Running   0          25m
-```
-> Create a configmap
-```bash
-k create configmap my-config-var --from-literal=name=Alain --from-literal=role=Solutions-Architect
-
-k get configmap my-config-var  # check if configmap created
-```
-> Copy the configuration of backend-pod
-```bash
-kgp backend-pod -oyaml > backend-pod.yaml  
-```
-> Updated yaml should look like this
+<p>  
+  
+> Final network policy in netpol.yaml should look like this  
+  
 ```yml
-apiVersion: v1
-kind: Pod
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  labels:
-    run: backend-pod
-  name: backend-pod
-  namespace: default
+  name: np
+  namespace: rollout
 spec:
-  containers:
-  - image: redis
-    imagePullPolicy: Always
-    name: backend-pod
-    resources: {}
-    envFrom:                                 # Add
-    - configMapRef:                          # Add
-        name: my-config-var                  # Add
-    terminationMessagePath: /dev/termination-log
-    terminationMessagePolicy: File
-  dnsPolicy: ClusterFirst
-  enableServiceLinks: true
-  nodeName: node01
-  preemptionPolicy: PreemptLowerPriority
-  priority: 0
-  restartPolicy: Always
-  schedulerName: default-scheduler
-  securityContext: {}
-  serviceAccount: default
-  serviceAccountName: default
-  terminationGracePeriodSeconds: 30
-  tolerations:
-  - effect: NoExecute
-    key: node.kubernetes.io/not-ready
-    operator: Exists
-    tolerationSeconds: 300
-  - effect: NoExecute
-    key: node.kubernetes.io/unreachable
-    operator: Exists
-    tolerationSeconds: 300 
-```
+  podSelector: {}  # Apply to all pods in rollout namespace
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: data
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+```  
 > Apply changes
 ```bash
-kaf backend-pod.yaml  
-```
-> Verify environment variables
+kaf netpol.yaml  
+```  
+> Add label to data namespace
 ```bash
-kex backend-pod -- printenv | grep -E 'name|role'   # output should similar to below
+kubectl label namespace data name=data
 
-name=Alain
-role=Solutions-Architect
+k get ns data --show-labels  # verify
+
+# output
+NAME   STATUS   AGE    LABELS
+data   Active   158m   kubernetes.io/metadata.name=data,name=data
 ```
+> Get the IP of the pods in data namespace
+```bash
+kgp -n data -o wide
+
+# output
+NAME                         READY   STATUS    RESTARTS   AGE    IP            NODE     NOMINATED NODE   READINESS GATES
+webdeploy-74bc5b78dc-c66bs   1/1     Running   0          162m   192.168.1.4   node01   <none>           <none>
+webdeploy-74bc5b78dc-fz998   1/1     Running   0          162m   192.168.1.6   node01   <none>           <none>
+webdeploy-74bc5b78dc-j6p95   1/1     Running   0          162m   192.168.1.5   node01   <none>           <none>
+```
+> Ping the IP from rollout namespace pod
+```bash
+kubectl run tester --rm -it --image=busybox --restart=Never -n rollout -- sh
+
+# ping 192.168.1.4
+```
+
 </p>
 </details>
