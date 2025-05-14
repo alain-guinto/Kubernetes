@@ -701,8 +701,42 @@ A Pod named sa-pod is running in the default namespace and requires access to a 
 <summary>🔒 show answer </summary>
 <p>
 
+> Create a service account admin
 ```bash
-TBD
+k create sa admin
+
+ksa admin     # check newly created service account
+```
+> Verify if sa-pod exists and running in default namespace
+```bash
+kgp sa-pod  # expected outout  
+
+NAME          READY   STATUS    RESTARTS   AGE
+sa-pod   1/1     Running   0          25m
+```  
+> Copy the configuration of backend-pod
+```bash
+kgp sa-pod -oyaml > sa-pod.yaml  
+```
+> Updated yaml should look like this
+```yml
+
+```
+> Delete sa-pod
+```bash
+kdel sa-pod
+```
+
+> Apply changes
+```bash
+kaf sa-pod.yaml  
+```
+> Verify secret is available in the path
+```bash
+kex backend-pod -- printenv | grep -E 'name|role'   # output should similar to below
+
+name=Alain
+role=Solutions-Architect
 ```
 
 </p>
@@ -719,6 +753,75 @@ There is an existing deployment in the rollout namespace. Your task is to create
 ```bash
 TBD
 ```
+> Verify if backend-pod exists in default namespace
+```bash
+kgp backend-pod  # expected outout  
+
+NAME          READY   STATUS    RESTARTS   AGE
+backend-pod   1/1     Running   0          25m
+```
+> Create a configmap
+```bash
+k create configmap my-config-var --from-literal=name=Alain --from-literal=role=Solutions-Architect
+
+k get configmap my-config-var  # check if configmap created
+```
+> Copy the configuration of backend-pod
+```bash
+kgp backend-pod -oyaml > backend-pod.yaml  
+```
+> Updated yaml should look like this
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: backend-pod
+  name: backend-pod
+  namespace: default
+spec:
+  containers:
+  - image: redis
+    imagePullPolicy: Always
+    name: backend-pod
+    resources: {}
+    envFrom:                                 # Add
+    - configMapRef:                          # Add
+        name: my-config-var                  # Add
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: node01
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300 
+```
+> Apply changes
+```bash
+kaf backend-pod.yaml  
+```
+> Verify environment variables
+```bash
+kex backend-pod -- printenv | grep -E 'name|role'   # output should similar to below
+
+name=Alain
+role=Solutions-Architect
+```
 
 </p>
 </details>
@@ -734,6 +837,74 @@ Your team needs to restrict egress traffic from applications in the rollout name
 ```bash
 TBD
 ```
+> Verify if backend-pod exists in default namespace
+```bash
+kgp backend-pod  # expected outout  
 
+NAME          READY   STATUS    RESTARTS   AGE
+backend-pod   1/1     Running   0          25m
+```
+> Create a configmap
+```bash
+k create configmap my-config-var --from-literal=name=Alain --from-literal=role=Solutions-Architect
+
+k get configmap my-config-var  # check if configmap created
+```
+> Copy the configuration of backend-pod
+```bash
+kgp backend-pod -oyaml > backend-pod.yaml  
+```
+> Updated yaml should look like this
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: backend-pod
+  name: backend-pod
+  namespace: default
+spec:
+  containers:
+  - image: redis
+    imagePullPolicy: Always
+    name: backend-pod
+    resources: {}
+    envFrom:                                 # Add
+    - configMapRef:                          # Add
+        name: my-config-var                  # Add
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: node01
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300 
+```
+> Apply changes
+```bash
+kaf backend-pod.yaml  
+```
+> Verify environment variables
+```bash
+kex backend-pod -- printenv | grep -E 'name|role'   # output should similar to below
+
+name=Alain
+role=Solutions-Architect
+```
 </p>
 </details>
