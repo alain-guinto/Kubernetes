@@ -1,4 +1,9 @@
-# Containers - Docker/Podman
+# Containers - Docker/Podman  
+**Pre-configuration:** Run below code to set-up your environment
+
+```bash
+sh https://raw.githubusercontent.com/alain-guinto/Kubernetes/refs/heads/main/containers-preconfig.sh
+```
 
 ### 📌 Question 1: Fix Broken Dockerfile and Push Image
 > You’ve been given a Dockerfile in /opt/course/1/image that fails to build due to a missing flag in the CMD instruction. The application should output the response body of https://example.com to stdout.
@@ -10,7 +15,7 @@
 - ***Test:*** Run a detached Podman container named optimus-curl using the pushed image and save its logs to /opt/course/1/logs.
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -29,7 +34,7 @@ Fix the issue:
 - Verify: Run the container and ensure the output matches the expected message. Save logs to /opt/course/2/logs.
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -50,7 +55,7 @@ Fix the issue:
 
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -69,7 +74,7 @@ Fix the issue:
 - ***Verify:*** Check the image size with sudo docker images and confirm Python runs.
   
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -88,7 +93,7 @@ Fix the issue:
   - Create a Pod using the fixed image and verify it stays running. Save logs to /opt/course/5/logs.
     
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -107,7 +112,7 @@ Fix the issue:
 - ***Test:*** Run the container with -e DB_PASSWORD=NewPass123 and verify output.
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -127,7 +132,7 @@ Fix the issue:
 
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -143,8 +148,9 @@ Fix the issue:
 - ***Build and push:***
   - Tag as registry.killer.sh:5000/cliffjumper-python:v1.
 - ***Test:*** Measure startup time before/after fixes.
+
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -166,7 +172,7 @@ Fix the issue:
 
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -188,7 +194,7 @@ Fix the issue:
 
 
 <details>
-<summary style="font-weight: bold; color: green;" >🔒 Show answer </summary>
+<summary>🔒 Show answer </summary>
 <p>  
   
   ```bash  
@@ -197,3 +203,187 @@ Fix the issue:
 </p>
 </details>
 
+### 📌 Question 11: Build and Push with Docker and Podman
+> Tasks:
+  - Modify the Dockerfile to set the environment variable SUN_CIPHER_ID to 5b9c1065-e39d-4a43-a04a-e59bcea3e03f.  
+  - Build the image using sudo docker, tag it as registry.killer.sh:5000/sun-cipher:v1-docker, and push it to the registry.  
+  - Build the image using sudo podman, tag it as registry.killer.sh:5000/sun-cipher:v1-podman, and push it to the registry.
+  - Run a container using sudo podman in detached mode named sun-cipher using the image registry.killer.sh:5000/sun-cipher:v1-podman.
+  - Redirect the logs produced by the sun-cipher container into /opt/course/11/logs.
+
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 12: 
+> Tasks:
+  - The current Dockerfile fails during the build process due to a missing requirements.txt file.
+  - Create a requirements.txt file with the necessary dependencies.
+  - Modify the Dockerfile to copy requirements.txt and install dependencies using pip.
+  - Build the image using sudo docker, tag it as registry.killer.sh:5000/python-app:v1, and push it to the registry.
+  - Run a container using sudo docker in detached mode named python-app using the image registry.killer.sh:5000/python-app:v1.
+  - Verify that the application starts successfully by checking the container logs.
+
+
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details> 
+
+### 📌 Question 13: 
+> Task:
+  -  The existing Dockerfile builds a large image due to unnecessary build tools being included.
+  -  Refactor the Dockerfile to use a multi-stage build:
+  -  First stage: Use node:14 to build the application.
+  -  Second stage: Use node:14-alpine to run the application.
+  -  Build the image using sudo podman, tag it as registry.killer.sh:5000/node-app:v2, and push it to the registry.
+  -  Run a container using sudo podman in detached mode named node-app using the image registry.killer.sh:5000/node-app:v2.
+  -  Confirm that the image size is reduced compared to the previous version.
+    
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 14: 
+> Task:
+  - The current Dockerfile uses an incorrect base image openjdk:8-jre which lacks necessary tools.
+  - Modify the Dockerfile to use openjdk:8-jdk as the base image.
+  - Build the image using sudo docker, tag it as registry.killer.sh:5000/java-app:v1, and push it to the registry.
+  - Run a container using sudo docker in detached mode named java-app using the image registry.killer.sh:5000/java-app:v1.
+  - Verify that the application runs successfully by checking the container logs.
+
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 15: 
+> Task:
+  -  Modify the Dockerfile to include a HEALTHCHECK instruction that checks if the application is responding on port 8080.
+  -  Build the image using sudo podman, tag it as registry.killer.sh:5000/go-app:v1, and push it to the registry.
+  -  Run a container using sudo podman in detached mode named go-app using the image registry.killer.sh:5000/go-app:v1.
+  -  Use podman inspect to verify that the health check is configured correctly.
+    
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 16:
+> Task:
+  -  Modify the Dockerfile to copy start.sh into the image and set it as the entrypoint.
+  -  Ensure that start.sh has executable permissions.
+  -  Build the image using sudo docker, tag it as registry.killer.sh:5000/bash-app:v1, and push it to the registry.
+  -  Run a container using sudo docker in detached mode named bash-app using the image registry.killer.sh:5000/bash-app:v1.
+  -  Verify that the application starts correctly by checking the container logs.
+    
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 17:
+> Task:
+  -  Modify the Dockerfile to accept a build argument APP_ENV with a default value of production.
+  -  Use the APP_ENV argument to set an environment variable inside the image.
+  -  Build the image using sudo podman, passing APP_ENV=staging, tag it as registry.killer.sh:5000/env-app:v1, and push it to the registry.
+  -  Run a container using sudo podman in detached mode named env-app using the image registry.killer.sh:5000/env-app:v1.
+  -  Inside the container, verify that the APP_ENV environment variable is set to staging.
+
+
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 18
+> Task:
+-  Run a container using sudo docker in detached mode named config-app using the image registry.killer.sh:5000/config-app:v1.
+-  Mount the host directory /opt/course/18/data to /app/config inside the container.
+-  Ensure that the application reads configuration from /app/config/config.json.
+-  Verify that the application starts successfully by checking the container logs.
+
+
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 19
+> Task:
+  -  Build the image using sudo docker, tag it as registry.killer.sh:5000/resource-app:v1, and push it to the registry.
+  -  Run a container using sudo docker in detached mode named resource-app using the image registry.killer.sh:5000/resource-app:v1.
+  -  Set the container's CPU limit to 0.5 and memory limit to 256m.
+  -  Verify the resource limits are applied by inspecting the container's configuration.
+
+
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
+
+### 📌 Question 20
+> Task:
+  -  Build the image using sudo podman, tag it as registry.killer.sh:5000/crash-app:v1, and push it to the registry.
+  -  Run a container using sudo podman in detached mode named crash-app using the image registry.killer.sh:5000/crash-app:v1.
+  -  The container enters a crash loop upon starting.
+  -  Investigate the issue by checking the container logs and inspecting the Dockerfile.
+  -  Identify and fix the issue causing the crash, rebuild the image, and redeploy the container.
+  -  Verify that the application starts successfully after the fix.
+    
+<details>
+<summary>🔒 Show answer </summary>
+<p>  
+  
+  ```bash  
+  >> Try to solve it on your own first.
+  ```
+</p>
+</details>
