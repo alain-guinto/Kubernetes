@@ -10,6 +10,7 @@ Whether you're just starting or fine-tuning your skills, these simulations are b
 - [Shortcut Keys and Time-saving Tips](shortcutkeys.md)
 - [CKAD Simulation Exam V1](ckad-simulation-exercise-v1.md)
 - [CKAD Simulation Exam V2](ckad-simulation-exercise-v2.md)
+- [Containers - Docker and Podman](containers.md)
 - [Pods](pod-exercise.md)
 - [Deployment](deployment-exercise.md)
 - [Service](service-exercise.md)
